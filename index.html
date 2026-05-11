@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="30 Seconds">
+<meta name="theme-color" content="#111118">
+<title>30 Seconds</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --y:#F5C518;--yd:#c9a000;--b:#2196F3;--bd:#1565C0;
+  --bg:#111118;--s1:#1c1c28;--s2:#252535;--s3:#2e2e42;
+  --txt:#f0f0f0;--muted:#7777aa;--red:#e74c3c;--green:#2ecc71;
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font-family:'Nunito',sans-serif;}
+#app{height:100dvh;display:flex;flex-direction:column;overflow:hidden;}
+.screen{display:none;flex-direction:column;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.screen.active{display:flex;}
+
+.title-big{font-family:'Bebas Neue',sans-serif;font-size:64px;letter-spacing:3px;line-height:1;}
+.label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:700;}
+
+.btn{border:none;border-radius:var(--r);padding:15px 20px;font-family:'Nunito',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:transform .1s,filter .1s;width:100%;}
+.btn:active{transform:scale(.97);filter:brightness(.9);}
+.btn-y{background:var(--y);color:#111;}
+.btn-b{background:var(--b);color:#fff;}
+.btn-ghost{background:var(--s2);color:var(--txt);}
+.btn-danger{background:var(--red);color:#fff;}
+.btn-sm{padding:9px 14px;font-size:14px;border-radius:10px;width:auto;}
+
+.card{background:var(--s1);border-radius:var(--r);padding:16px;}
+
+.ibtn{background:var(--s3);border:none;border-radius:9px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:var(--muted);flex-shrink:0;}
+.ibtn:active{background:#444;}
+
+input[type=text],textarea{background:var(--s2);border:1.5px solid var(--s3);border-radius:10px;color:var(--txt);font-family:'Nunito',sans-serif;font-size:15px;padding:11px 13px;width:100%;outline:none;}
+input[type=text]:focus,textarea:focus{border-color:var(--y);}
+textarea{resize:none;min-height:90px;}
+
+/* ── HOME ── */
+#screen-home{align-items:center;padding:0 20px 24px;}
+.home-hero{text-align:center;padding:40px 0 24px;}
+.home-hero .title-big{color:var(--y);}
+.home-hero .title-big span{color:var(--b);}
+.home-hero p{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:4px;}
+.theme-list{width:100%;display:flex;flex-direction:column;gap:10px;flex:1;overflow-y:auto;padding-bottom:8px;}
+.theme-item{background:var(--s1);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;border:2px solid transparent;transition:border-color .15s;}
+.theme-item.sel{border-color:var(--y);}
+.theme-item-icon{width:44px;height:44px;border-radius:10px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.theme-item-info{flex:1;min-width:0;}
+.theme-item-name{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.theme-item-meta{font-size:12px;color:var(--muted);margin-top:2px;}
+.theme-item-actions{display:flex;gap:8px;}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);}
+.empty-state .es-icon{font-size:48px;margin-bottom:12px;}
+.empty-state p{font-size:14px;line-height:1.7;}
+.home-actions{width:100%;display:flex;flex-direction:column;gap:10px;margin-top:12px;}
+.add-theme-btn{background:none;border:2px dashed var(--s3);border-radius:var(--r);padding:13px;font-size:14px;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;font-family:'Nunito',sans-serif;font-weight:700;}
+.add-theme-btn:active{background:var(--s1);}
+
+/* ── EDITOR ── */
+#screen-editor{padding:0;}
+.editor-header{padding:16px 20px 12px;display:flex;align-items:center;gap:12px;background:var(--bg);border-bottom:1px solid var(--s2);position:sticky;top:0;z-index:10;}
+.editor-header h2{font-size:18px;font-weight:900;flex:1;}
+.editor-body{padding:16px 20px;display:flex;flex-direction:column;gap:16px;flex:1;padding-bottom:40px;}
+.editor-meta{display:flex;gap:10px;align-items:flex-start;}
+.emoji-pick{background:var(--s2);border:1.5px solid var(--s3);border-radius:10px;width:54px;height:46px;font-size:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+.words-section h3{font-size:14px;font-weight:700;margin-bottom:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+.word-item{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.word-item input{flex:1;}
+.words-add-row{display:flex;gap:8px;margin-top:4px;}
+.words-add-row input{flex:1;}
+.word-count-badge{background:var(--s3);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700;color:var(--muted);display:inline-block;margin-left:8px;}
+.danger-zone{border-top:1px solid var(--s2);padding-top:16px;margin-top:4px;}
+
+/* ── SETUP ── */
+#screen-setup{padding:0;}
+.setup-header{padding:20px 20px 0;display:flex;align-items:center;gap:12px;}
+.setup-header h2{font-size:20px;font-weight:900;flex:1;}
+.setup-body{padding:20px;display:flex;flex-direction:column;gap:20px;flex:1;}
+.team-count-row{display:flex;align-items:center;gap:16px;justify-content:center;padding:16px 0;}
+.count-btn{background:var(--s2);border:none;border-radius:50%;width:50px;height:50px;font-size:26px;color:var(--txt);cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:900;}
+.count-btn:active{background:var(--s3);}
+.count-display{font-family:'Bebas Neue',sans-serif;font-size:64px;color:var(--y);width:80px;text-align:center;line-height:1;}
+.teams-list{display:flex;flex-direction:column;gap:10px;}
+.team-row{display:flex;align-items:center;gap:10px;}
+.team-color-dot{width:16px;height:16px;border-radius:50%;flex-shrink:0;}
+.setup-footer{padding:0 20px 32px;display:flex;flex-direction:column;gap:10px;}
+
+/* ── BOARD ── */
+#screen-board{padding:0;}
+.board-header{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;background:var(--bg);}
+.board-header h2{font-size:15px;font-weight:700;}
+.board-wrap{padding:12px;flex:1;display:flex;flex-direction:column;gap:14px;overflow-y:auto;}
+.board-grid{display:grid;gap:4px;}
+.tile{border-radius:9px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;text-align:center;overflow:hidden;position:relative;}
+.tile-y{background:var(--y);color:#111;}
+.tile-b{background:var(--b);color:#fff;}
+.tile-start{background:var(--green);color:#fff;}
+.tile-finish{background:var(--red);color:#fff;}
+.tile-empty{background:transparent;}
+.pawn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;z-index:2;box-shadow:0 2px 6px rgba(0,0,0,.5);}
+.multi-pawns{position:absolute;display:flex;flex-wrap:wrap;gap:2px;justify-content:center;align-items:center;inset:2px;z-index:2;}
+.multi-pawns .pawn{position:static;transform:none;width:16px;height:16px;font-size:7px;}
+.teams-status{display:flex;flex-direction:column;gap:8px;}
+.team-status-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--s1);border-radius:10px;border:2px solid transparent;}
+.team-status-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;}
+.team-status-name{flex:1;font-size:14px;font-weight:700;}
+.team-status-pos{font-size:12px;color:var(--muted);}
+.team-status-active{border-color:var(--y);}
+.btn-start-turn{margin:0 12px 20px;}
+
+/* ── PLAY ── */
+#screen-play{background:var(--bg);}
+.play-top{padding:16px 20px 8px;display:flex;align-items:center;gap:10px;}
+.play-team-badge{display:flex;align-items:center;gap:8px;background:var(--s1);border-radius:20px;padding:6px 14px;}
+.play-team-dot{width:12px;height:12px;border-radius:50%;}
+.play-team-name{font-size:14px;font-weight:700;}
+.play-timer-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;}
+.timer-ring{position:relative;width:160px;height:160px;}
+.timer-ring svg{position:absolute;top:0;left:0;transform:rotate(-90deg);}
+.timer-ring circle{fill:none;stroke-width:8;stroke-linecap:round;}
+.timer-bg{stroke:var(--s2);}
+.timer-fg{stroke:var(--y);transition:stroke-dashoffset .1s linear,stroke .3s;}
+.timer-num{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Bebas Neue',sans-serif;font-size:64px;color:var(--y);line-height:1;}
+.words-display{padding:0 14px;display:flex;flex-direction:column;gap:8px;flex:1;overflow-y:auto;}
+.word-card{background:var(--s1);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:10px;transition:background .15s;}
+.word-card.correct{background:#1a3a1a;}
+.word-card.skipped{background:#2a1a1a;opacity:.55;}
+.word-card-num{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--muted);width:26px;text-align:center;}
+.word-card-text{flex:1;font-size:20px;font-weight:900;line-height:1.2;}
+.word-btns{display:flex;gap:8px;flex-shrink:0;}
+.wbtn{border:none;border-radius:8px;width:36px;height:36px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.wbtn-ok{background:#1a3a1a;color:var(--green);}
+.wbtn-no{background:#3a1a1a;color:var(--red);}
+.wbtn:active{opacity:.7;}
+.play-footer{padding:10px 16px 28px;}
+
+/* ── LOCKED ── */
+#screen-locked{background:var(--bg);align-items:center;justify-content:center;text-align:center;padding:32px;}
+.lock-icon{font-size:72px;margin-bottom:16px;}
+.lock-title{font-family:'Bebas Neue',sans-serif;font-size:52px;color:var(--red);margin-bottom:8px;}
+.lock-sub{font-size:15px;color:var(--muted);margin-bottom:28px;line-height:1.7;}
+.lock-team-badge{background:var(--s1);border-radius:20px;padding:10px 20px;display:inline-flex;align-items:center;gap:10px;margin-bottom:28px;}
+
+/* ── SCORING ── */
+#screen-scoring{padding:0;}
+.scoring-header{padding:20px 20px 12px;background:var(--bg);}
+.scoring-header h2{font-size:20px;font-weight:900;}
+.scoring-header p{font-size:13px;color:var(--muted);margin-top:4px;}
+.scoring-body{padding:14px 20px;display:flex;flex-direction:column;gap:10px;flex:1;overflow-y:auto;}
+.score-word-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--s1);border-radius:10px;}
+.score-word-num{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--muted);width:22px;}
+.score-word-text{flex:1;font-size:18px;font-weight:700;}
+.check-btn{width:44px;height:44px;border-radius:10px;border:none;font-size:20px;cursor:pointer;transition:transform .1s;font-family:'Nunito',sans-serif;}
+.check-btn:active{transform:scale(.9);}
+.check-on{background:#1a3a1a;color:var(--green);}
+.check-off{background:var(--s3);color:var(--muted);}
+.score-total-bar{background:var(--s1);border-radius:var(--r);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;margin:0 20px 12px;}
+.score-total-label{font-size:14px;color:var(--muted);font-weight:700;}
+.score-total-num{font-family:'Bebas Neue',sans-serif;font-size:34px;color:var(--y);}
+.scoring-footer{padding:0 20px 32px;display:flex;flex-direction:column;gap:10px;}
+
+/* ── WIN ── */
+#screen-win{align-items:center;justify-content:center;text-align:center;padding:32px;background:var(--bg);}
+.win-icon{font-size:80px;margin-bottom:16px;}
+.win-title{font-family:'Bebas Neue',sans-serif;font-size:56px;color:var(--y);line-height:1;}
+.win-sub{font-size:15px;color:var(--muted);margin:8px 0 28px;}
+.win-team-badge{background:var(--s1);border-radius:var(--r);padding:14px 20px;margin-bottom:24px;display:flex;align-items:center;gap:12px;justify-content:center;}
+.win-team-dot{width:20px;height:20px;border-radius:50%;}
+.win-team-name{font-size:20px;font-weight:900;}
+
+/* ── MODALS ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:flex;align-items:flex-end;justify-content:center;}
+.modal-overlay.hidden{display:none;}
+.modal-box{background:var(--s1);border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:500px;}
+.modal-box h3{font-size:18px;font-weight:900;margin-bottom:16px;}
+.modal-actions{display:flex;flex-direction:column;gap:10px;margin-top:20px;}
+.emoji-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:12px;}
+.emoji-opt{background:var(--s2);border:none;border-radius:8px;height:40px;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.emoji-opt:active{background:var(--s3);}
+
+.tag{background:var(--s3);border-radius:20px;padding:4px 10px;font-size:12px;color:var(--muted);font-weight:700;}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- HOME -->
+<div id="screen-home" class="screen active">
+  <div class="home-hero">
+    <div class="title-big">30<span>S</span></div>
+    <p>Kies een thema om te spelen</p>
+  </div>
+  <div class="theme-list" id="theme-list"></div>
+  <div style="padding:0 20px;width:100%;">
+    <button class="add-theme-btn" onclick="openNewTheme()">＋ Nieuw thema aanmaken</button>
+  </div>
+  <div style="padding:12px 20px 32px;width:100%;display:flex;flex-direction:column;gap:10px;margin-top:8px;">
+    <button class="btn btn-y" id="btn-play" onclick="goSetup()" disabled>🎮 Spelen</button>
+  </div>
+</div>
+
+<!-- EDITOR -->
+<div id="screen-editor" class="screen">
+  <div class="editor-header">
+    <button class="ibtn" onclick="closeEditor()">←</button>
+    <h2 id="editor-title">Nieuw thema</h2>
+    <button class="btn btn-y btn-sm" onclick="saveTheme()">Opslaan</button>
+  </div>
+  <div class="editor-body">
+    <div class="editor-meta">
+      <div class="emoji-pick" id="emoji-pick-btn" onclick="openEmojiPicker()">🎯</div>
+      <input type="text" id="theme-name-input" placeholder="Naam van het thema" style="flex:1;">
+    </div>
+    <div>
+      <h3 style="font-size:14px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">
+        Woorden <span class="word-count-badge" id="word-count-badge">0</span>
+      </h3>
+      <div id="words-list"></div>
+      <div class="words-add-row">
+        <input type="text" id="new-word-input" placeholder="Nieuw woord toevoegen..." onkeydown="if(event.key==='Enter')addWordFromInput()">
+        <button class="btn btn-b btn-sm" onclick="addWordFromInput()">＋</button>
+      </div>
+    </div>
+    <div>
+      <p class="label" style="margin-bottom:8px;">Of plak meerdere woorden (één per regel)</p>
+      <textarea id="bulk-input" placeholder="woord 1&#10;woord 2&#10;woord 3"></textarea>
+      <button class="btn btn-ghost btn-sm" style="margin-top:8px;width:auto;" onclick="bulkAdd()">Bulk toevoegen</button>
+    </div>
+    <div style="border-top:1px solid var(--s2);padding-top:16px;">
+      <button class="btn btn-danger btn-sm" id="delete-theme-btn" onclick="deleteCurrentTheme()" style="width:auto;">🗑 Thema verwijderen</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETUP -->
+<div id="screen-setup" class="screen">
+  <div class="setup-header">
+    <button class="ibtn" onclick="showScreen('home')">←</button>
+    <h2>Teams instellen</h2>
+  </div>
+  <div class="setup-body">
+    <div>
+      <p class="label" style="margin-bottom:4px;">Aantal teams</p>
+      <div class="team-count-row">
+        <button class="count-btn" onclick="changeTeamCount(-1)">−</button>
+        <div class="count-display" id="team-count-display">2</div>
+        <button class="count-btn" onclick="changeTeamCount(1)">＋</button>
+      </div>
+    </div>
+    <div>
+      <p class="label" style="margin-bottom:10px;">Teamnamen</p>
+      <div class="teams-list" id="teams-list"></div>
+    </div>
+    <div>
+      <p class="label" style="margin-bottom:8px;">Thema</p>
+      <div id="setup-theme-info" class="card" style="display:flex;align-items:center;gap:12px;"></div>
+    </div>
+  </div>
+  <div class="setup-footer">
+    <button class="btn btn-y" onclick="startGame()">🚀 Spel starten</button>
+    <button class="btn btn-ghost" onclick="showScreen('home')">Annuleren</button>
+  </div>
+</div>
+
+<!-- BOARD -->
+<div id="screen-board" class="screen">
+  <div class="board-header">
+    <button class="ibtn" onclick="confirmQuit()">✕</button>
+    <h2 id="board-theme-name"></h2>
+    <div class="tag" id="board-round-tag">Ronde 1</div>
+  </div>
+  <div class="board-wrap">
+    <div id="board-grid" class="board-grid"></div>
+    <div id="teams-status" class="teams-status"></div>
+  </div>
+  <button class="btn btn-y btn-start-turn" id="btn-start-turn" onclick="startTurn()"></button>
+</div>
+
+<!-- PLAY -->
+<div id="screen-play" class="screen">
+  <div class="play-top">
+    <div class="play-team-badge">
+      <div class="play-team-dot" id="play-team-dot"></div>
+      <div class="play-team-name" id="play-team-name"></div>
+    </div>
+    <div class="tag" id="play-round-tag" style="margin-left:auto;">Ronde 1</div>
+  </div>
+  <div class="play-timer-wrap">
+    <div class="timer-ring">
+      <svg viewBox="0 0 160 160" width="160" height="160">
+        <circle class="timer-bg" cx="80" cy="80" r="72"/>
+        <circle class="timer-fg" id="timer-circle" cx="80" cy="80" r="72"/>
+      </svg>
+      <div class="timer-num" id="timer-num">30</div>
+    </div>
+  </div>
+  <div class="words-display" id="words-display"></div>
+  <div class="play-footer">
+    <button class="btn btn-ghost" onclick="endTurnEarly()">Beurt beëindigen</button>
+  </div>
+</div>
+
+<!-- LOCKED -->
+<div id="screen-locked" class="screen">
+  <div class="lock-icon">🔒</div>
+  <div class="lock-title">STOP!</div>
+  <div class="lock-sub">De 30 seconden zijn voorbij.<br>Geef de telefoon door aan<br>het volgende team.</div>
+  <div class="lock-team-badge">
+    <div class="team-status-dot" id="lock-next-dot" style="width:14px;height:14px;border-radius:50%;flex-shrink:0;"></div>
+    <div style="font-size:15px;font-weight:700;" id="lock-next-name"></div>
+  </div>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:28px;">scoort voor het vorige team</p>
+  <button class="btn btn-y" style="max-width:320px;" onclick="goScoring()">✅ Ik ben het volgende team</button>
+</div>
+
+<!-- SCORING -->
+<div id="screen-scoring" class="screen">
+  <div class="scoring-header">
+    <h2 id="scoring-title">Hoeveel goed?</h2>
+    <p id="scoring-sub">Vink aan wat het vorige team goed had</p>
+  </div>
+  <div class="scoring-body" id="scoring-body"></div>
+  <div class="score-total-bar">
+    <div class="score-total-label">Goed geraden</div>
+    <div class="score-total-num" id="score-total-num">0 / 5</div>
+  </div>
+  <div class="scoring-footer">
+    <button class="btn btn-y" onclick="confirmScore()">Bevestigen &amp; verder</button>
+  </div>
+</div>
+
+<!-- WIN -->
+<div id="screen-win" class="screen">
+  <div class="win-icon">🏆</div>
+  <div class="win-title">GEWONNEN!</div>
+  <div class="win-sub" id="win-sub"></div>
+  <div class="win-team-badge">
+    <div class="win-team-dot" id="win-team-dot"></div>
+    <div class="win-team-name" id="win-team-name"></div>
+  </div>
+  <button class="btn btn-y" style="max-width:320px;" onclick="newGame()">🎮 Nieuw spel</button>
+  <button class="btn btn-ghost" style="max-width:320px;margin-top:10px;" onclick="showScreen('home')">Hoofdmenu</button>
+</div>
+
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay hidden" id="modal-emoji">
+  <div class="modal-box">
+    <h3>Kies een emoji</h3>
+    <div class="emoji-grid" id="emoji-grid"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-emoji')">Annuleren</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="modal-quit">
+  <div class="modal-box">
+    <h3>Spel stoppen?</h3>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:4px;">De voortgang gaat verloren.</p>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="quitGame()">Ja, stoppen</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-quit')">Doorgaan met spelen</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="modal-new-theme">
+  <div class="modal-box">
+    <h3>Nieuw thema</h3>
+    <input type="text" id="quick-theme-name" placeholder="Bijv. Familie, Vrienden, Sport...">
+    <div class="modal-actions">
+      <button class="btn btn-y" onclick="createQuickTheme()">Aanmaken</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-new-theme')">Annuleren</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════
+const EMOJIS = ['🎯','🏠','👨‍👩‍👧','👫','🎉','🎬','⚽','🏀','🎵','🍕','🌍','🚗','💼','🐶','🌈','🎮','📚','✈️','🏖️','🎭','🍔','🎸','💪','🧠','🌟','🎪','🎨','🤝','🏆','🔥','🧩','🎲','🌺','🏔️','🎓','🦁','🎻','⭐','🍦','🌙'];
+const TEAM_COLORS = ['#F5C518','#2196F3','#e74c3c','#2ecc71','#9b59b6','#e67e22'];
+const TOTAL_TILES = 36; // tiles on board path (0 = start, 35 = finish)
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let library = [];
+let selectedThemeId = null;
+let editingThemeId = null;
+let currentEmoji = '🎯';
+let setupTeamCount = 2;
+let game = null;
+let timerInterval = null;
+
+// ═══════════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════════
+function loadLibrary() {
+  try { return JSON.parse(localStorage.getItem('30s_v2') || '[]'); } catch(e) { return []; }
+}
+function saveLibrary() {
+  localStorage.setItem('30s_v2', JSON.stringify(library));
+}
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+// ═══════════════════════════════════════════
+// SCREENS
+// ═══════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+}
+
+// ═══════════════════════════════════════════
+// HOME
+// ═══════════════════════════════════════════
+function renderHome() {
+  const list = document.getElementById('theme-list');
+  const btnPlay = document.getElementById('btn-play');
+  if (!library.length) {
+    list.innerHTML = '<div class="empty-state"><div class="es-icon">📝</div><p>Maak je eerste thema aan<br>om te beginnen met spelen.</p></div>';
+    btnPlay.disabled = true;
+    return;
+  }
+  list.innerHTML = library.map(t => {
+    const sel = selectedThemeId === t.id ? 'sel' : '';
+    return `<div class="theme-item ${sel}" onclick="selectTheme('${t.id}')">
+      <div class="theme-item-icon">${t.emoji}</div>
+      <div class="theme-item-info">
+        <div class="theme-item-name">${esc(t.name)}</div>
+        <div class="theme-item-meta">${t.words.length} woorden</div>
+      </div>
+      <div class="theme-item-actions">
+        <button class="ibtn" onclick="event.stopPropagation();openEditor('${t.id}')">✏️</button>
+      </div>
+    </div>`;
+  }).join('');
+  const selTheme = library.find(t => t.id === selectedThemeId);
+  btnPlay.disabled = !selTheme || selTheme.words.length < 5;
+  if (selTheme && selTheme.words.length < 5) {
+    btnPlay.title = 'Voeg minimaal 5 woorden toe aan dit thema';
+  }
+}
+
+function selectTheme(id) {
+  selectedThemeId = id;
+  renderHome();
+}
+
+// ═══════════════════════════════════════════
+// NEW THEME MODAL
+// ═══════════════════════════════════════════
+function openNewTheme() {
+  document.getElementById('quick-theme-name').value = '';
+  openModal('modal-new-theme');
+  setTimeout(() => document.getElementById('quick-theme-name').focus(), 300);
+}
+
+function createQuickTheme() {
+  const name = document.getElementById('quick-theme-name').value.trim();
+  if (!name) return alert('Geef het thema een naam.');
+  const t = { id: genId(), name, emoji: EMOJIS[Math.floor(Math.random() * EMOJIS.length)], words: [] };
+  library.push(t);
+  saveLibrary();
+  closeModal('modal-new-theme');
+  openEditor(t.id);
+}
+
+// ═══════════════════════════════════════════
+// THEME EDITOR
+// ═══════════════════════════════════════════
+function openEditor(id) {
+  editingThemeId = id;
+  const t = library.find(x => x.id === id);
+  document.getElementById('editor-title').textContent = t ? t.name : 'Thema';
+  document.getElementById('theme-name-input').value = t ? t.name : '';
+  currentEmoji = t ? t.emoji : '🎯';
+  document.getElementById('emoji-pick-btn').textContent = currentEmoji;
+  document.getElementById('bulk-input').value = '';
+  renderWordsList(t ? [...t.words] : []);
+  showScreen('editor');
+}
+
+function renderWordsList(words) {
+  document.getElementById('word-count-badge').textContent = words.length;
+  document.getElementById('words-list').innerHTML = words.map((w, i) => `
+    <div class="word-item">
+      <input type="text" value="${esc(w)}" onchange="updateWord(${i},this.value)" placeholder="Woord ${i+1}">
+      <button class="ibtn" onclick="removeWord(${i})">🗑</button>
+    </div>`).join('');
+}
+
+function getEditingTheme() { return library.find(x => x.id === editingThemeId); }
+
+function updateWord(i, val) {
+  const t = getEditingTheme();
+  if (t) t.words[i] = val.trim();
+}
+
+function removeWord(i) {
+  const t = getEditingTheme();
+  if (!t) return;
+  // flush current inputs first
+  flushWordInputs();
+  t.words.splice(i, 1);
+  renderWordsList(t.words);
+}
+
+function flushWordInputs() {
+  const t = getEditingTheme();
+  if (!t) return;
+  document.querySelectorAll('#words-list .word-item input').forEach((inp, i) => {
+    if (t.words[i] !== undefined) t.words[i] = inp.value.trim();
+  });
+}
+
+function addWordFromInput() {
+  const inp = document.getElementById('new-word-input');
+  const val = inp.value.trim();
+  if (!val) return;
+  flushWordInputs();
+  const t = getEditingTheme();
+  if (!t) return;
+  t.words.push(val);
+  inp.value = '';
+  renderWordsList(t.words);
+  // scroll words list to bottom
+  const wl = document.getElementById('words-list');
+  wl.scrollTop = wl.scrollHeight;
+  inp.focus();
+}
+
+function bulkAdd() {
+  const raw = document.getElementById('bulk-input').value;
+  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+  if (!lines.length) return;
+  flushWordInputs();
+  const t = getEditingTheme();
+  if (!t) return;
+  t.words.push(...lines);
+  document.getElementById('bulk-input').value = '';
+  renderWordsList(t.words);
+}
+
+function saveTheme() {
+  flushWordInputs();
+  const t = getEditingTheme();
+  if (!t) return;
+  t.words = t.words.filter(Boolean);
+  const name = document.getElementById('theme-name-input').value.trim();
+  if (name) t.name = name;
+  t.emoji = currentEmoji;
+  saveLibrary();
+  closeEditor();
+}
+
+function closeEditor() {
+  editingThemeId = null;
+  renderHome();
+  showScreen('home');
+}
+
+function deleteCurrentTheme() {
+  const t = getEditingTheme();
+  if (!t) return;
+  if (!confirm(`"${t.name}" verwijderen? Dit kan niet ongedaan worden gemaakt.`)) return;
+  library = library.filter(x => x.id !== t.id);
+  if (selectedThemeId === t.id) selectedThemeId = null;
+  saveLibrary();
+  closeEditor();
+}
+
+// EMOJI
+function openEmojiPicker() {
+  document.getElementById('emoji-grid').innerHTML = EMOJIS.map(e =>
+    `<button class="emoji-opt" onclick="pickEmoji('${e}')">${e}</button>`).join('');
+  openModal('modal-emoji');
+}
+function pickEmoji(e) {
+  currentEmoji = e;
+  document.getElementById('emoji-pick-btn').textContent = e;
+  closeModal('modal-emoji');
+}
+
+// ═══════════════════════════════════════════
+// SETUP
+// ═══════════════════════════════════════════
+function goSetup() {
+  const t = library.find(x => x.id === selectedThemeId);
+  if (!t || t.words.length < 5) return;
+  setupTeamCount = 2;
+  renderSetup();
+  showScreen('setup');
+}
+
+function renderSetup() {
+  document.getElementById('team-count-display').textContent = setupTeamCount;
+  const list = document.getElementById('teams-list');
+  list.innerHTML = '';
+  for (let i = 0; i < setupTeamCount; i++) {
+    const row = document.createElement('div');
+    row.className = 'team-row';
+    row.innerHTML = `<div class="team-color-dot" style="background:${TEAM_COLORS[i]}"></div>
+      <input type="text" value="Team ${i+1}" id="team-name-${i}" placeholder="Naam team ${i+1}">`;
+    list.appendChild(row);
+  }
+  const t = library.find(x => x.id === selectedThemeId);
+  document.getElementById('setup-theme-info').innerHTML = `
+    <div style="font-size:28px;">${t.emoji}</div>
+    <div><div style="font-weight:700;">${esc(t.name)}</div>
+    <div style="font-size:12px;color:var(--muted)">${t.words.length} woorden</div></div>`;
+}
+
+function changeTeamCount(d) {
+  setupTeamCount = Math.max(2, Math.min(6, setupTeamCount + d));
+  renderSetup();
+}
+
+function startGame() {
+  const t = library.find(x => x.id === selectedThemeId);
+  if (!t) return;
+  const teams = [];
+  for (let i = 0; i < setupTeamCount; i++) {
+    const name = document.getElementById('team-name-' + i)?.value.trim() || ('Team ' + (i+1));
+    teams.push({ name, color: TEAM_COLORS[i], position: 0 });
+  }
+  game = {
+    theme: t,
+    teams,
+    currentTeamIdx: 0,
+    round: 1,
+    usedIndices: new Set(),
+    lastWords: [],
+    lastChecked: []
+  };
+  renderBoard();
+  showScreen('board');
+}
+
+// ═══════════════════════════════════════════
+// BOARD
+// ═══════════════════════════════════════════
+function buildBoardPath() {
+  // Spiral path for a roughly 7-col grid
+  const cols = 7;
+  const rows = Math.ceil(TOTAL_TILES / cols); // ~6
+  const path = [];
+  let top = 0, bottom = rows - 1, left = 0, right = cols - 1;
+  while (path.length < TOTAL_TILES) {
+    for (let c = left; c <= right && path.length < TOTAL_TILES; c++) path.push([top, c]);
+    top++;
+    for (let r = top; r <= bottom && path.length < TOTAL_TILES; r++) path.push([r, right]);
+    right--;
+    for (let c = right; c >= left && path.length < TOTAL_TILES; c--) path.push([bottom, c]);
+    bottom--;
+    for (let r = bottom; r >= top && path.length < TOTAL_TILES; r--) path.push([r, left]);
+    left++;
+  }
+  return { path, cols, rows };
+}
+
+function renderBoard() {
+  document.getElementById('board-theme-name').textContent = game.theme.name;
+  document.getElementById('board-round-tag').textContent = 'Ronde ' + game.round;
+
+  const { path, cols, rows } = buildBoardPath();
+  const posMap = {};
+  path.forEach(([r, c], idx) => { posMap[`${r},${c}`] = idx; });
+
+  const grid = document.getElementById('board-grid');
+  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+  let html = '';
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const idx = posMap[`${r},${c}`];
+      if (idx === undefined) { html += '<div class="tile tile-empty"></div>'; continue; }
+      const isStart = idx === 0;
+      const isFinish = idx === TOTAL_TILES - 1;
+      let cls = isStart ? 'tile-start' : isFinish ? 'tile-finish' : (idx % 2 === 0 ? 'tile-y' : 'tile-b');
+      const teamsHere = game.teams.filter(t => t.position === idx);
+      let pawnHtml = '';
+      if (teamsHere.length === 1) {
+        pawnHtml = `<div class="pawn" style="background:${teamsHere[0].color}">${teamsHere[0].name.charAt(0).toUpperCase()}</div>`;
+      } else if (teamsHere.length > 1) {
+        pawnHtml = `<div class="multi-pawns">${teamsHere.map(t => `<div class="pawn" style="background:${t.color}">${t.name.charAt(0).toUpperCase()}</div>`).join('')}</div>`;
+      }
+      const label = isStart ? 'START' : isFinish ? '🏁' : '';
+      html += `<div class="tile ${cls}">${pawnHtml}${pawnHtml ? '' : label}</div>`;
+    }
+  }
+  grid.innerHTML = html;
+
+  // Teams status
+  document.getElementById('teams-status').innerHTML = game.teams.map((t, i) => `
+    <div class="team-status-row ${i === game.currentTeamIdx ? 'team-status-active' : ''}">
+      <div class="team-status-dot" style="background:${t.color}"></div>
+      <div class="team-status-name">${esc(t.name)}</div>
+      <div class="team-status-pos">Vakje ${t.position + 1} / ${TOTAL_TILES}</div>
+    </div>`).join('');
+
+  const curTeam = game.teams[game.currentTeamIdx];
+  document.getElementById('btn-start-turn').textContent = `▶  ${curTeam.name} is aan de beurt`;
+}
+
+// ═══════════════════════════════════════════
+// TURN
+// ═══════════════════════════════════════════
+function startTurn() {
+  const team = game.teams[game.currentTeamIdx];
+  const words = game.theme.words;
+
+  // Pick 5 unused words; reset pool if needed
+  let available = words.map((w, i) => i).filter(i => !game.usedIndices.has(i));
+  if (available.length < 5) {
+    game.usedIndices = new Set();
+    available = words.map((_, i) => i);
+  }
+  // Shuffle
+  for (let i = available.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [available[i], available[j]] = [available[j], available[i]];
+  }
+  const picked = available.slice(0, 5);
+  picked.forEach(i => game.usedIndices.add(i));
+  game.lastWords = picked.map(i => words[i]);
+  game.lastChecked = new Array(5).fill(false);
+
+  document.getElementById('play-team-dot').style.background = team.color;
+  document.getElementById('play-team-name').textContent = team.name;
+  document.getElementById('play-round-tag').textContent = 'Ronde ' + game.round;
+  renderPlayWords();
+  showScreen('play');
+  startTimer();
+}
+
+function renderPlayWords() {
+  document.getElementById('words-display').innerHTML = game.lastWords.map((w, i) => `
+    <div class="word-card" id="wc-${i}">
+      <div class="word-card-num">${i + 1}</div>
+      <div class="word-card-text">${esc(w)}</div>
+      <div class="word-btns">
+        <button class="wbtn wbtn-ok" onclick="togglePlayWord(${i},true)">✓</button>
+        <button class="wbtn wbtn-no" onclick="togglePlayWord(${i},false)">✗</button>
+      </div>
+    </div>`).join('');
+}
+
+function togglePlayWord(i, correct) {
+  game.lastChecked[i] = correct;
+  document.getElementById('wc-' + i).className = 'word-card ' + (correct ? 'correct' : 'skipped');
+}
+
+// ═══════════════════════════════════════════
+// TIMER
+// ═══════════════════════════════════════════
+function startTimer() {
+  clearInterval(timerInterval);
+  let timeLeft = 30;
+  const circ = 2 * Math.PI * 72;
+  const circle = document.getElementById('timer-circle');
+  const numEl = document.getElementById('timer-num');
+  circle.style.strokeDasharray = circ;
+  circle.style.strokeDashoffset = 0;
+  circle.style.stroke = '#F5C518';
+  numEl.textContent = '30';
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    const offset = circ * (1 - timeLeft / 30);
+    circle.style.strokeDashoffset = offset;
+    numEl.textContent = timeLeft;
+    if (timeLeft <= 10) circle.style.stroke = '#e74c3c';
+    else if (timeLeft <= 20) circle.style.stroke = '#e67e22';
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      showLockScreen();
+    }
+  }, 1000);
+}
+
+function endTurnEarly() {
+  clearInterval(timerInterval);
+  showLockScreen();
+}
+
+function showLockScreen() {
+  const nextIdx = (game.currentTeamIdx + 1) % game.teams.length;
+  const nextTeam = game.teams[nextIdx];
+  document.getElementById('lock-next-dot').style.background = nextTeam.color;
+  document.getElementById('lock-next-name').textContent = nextTeam.name;
+  showScreen('locked');
+}
+
+// ═══════════════════════════════════════════
+// SCORING
+// ═══════════════════════════════════════════
+function goScoring() {
+  const prevTeam = game.teams[game.currentTeamIdx];
+  document.getElementById('scoring-title').textContent = prevTeam.name + ' scoort';
+  document.getElementById('scoring-sub').textContent = 'Welke woorden waren goed geraden?';
+
+  document.getElementById('scoring-body').innerHTML = game.lastWords.map((w, i) => `
+    <div class="score-word-item">
+      <div class="score-word-num">${i + 1}</div>
+      <div class="score-word-text">${esc(w)}</div>
+      <button class="check-btn ${game.lastChecked[i] ? 'check-on' : 'check-off'}"
+        id="sc-${i}" onclick="toggleScore(${i})">${game.lastChecked[i] ? '✓' : '○'}</button>
+    </div>`).join('');
+  updateScoreTotal();
+  showScreen('scoring');
+}
+
+function toggleScore(i) {
+  game.lastChecked[i] = !game.lastChecked[i];
+  const btn = document.getElementById('sc-' + i);
+  btn.className = 'check-btn ' + (game.lastChecked[i] ? 'check-on' : 'check-off');
+  btn.textContent = game.lastChecked[i] ? '✓' : '○';
+  updateScoreTotal();
+}
+
+function updateScoreTotal() {
+  const n = game.lastChecked.filter(Boolean).length;
+  document.getElementById('score-total-num').textContent = n + ' / ' + game.lastWords.length;
+}
+
+function confirmScore() {
+  const correct = game.lastChecked.filter(Boolean).length;
+  const team = game.teams[game.currentTeamIdx];
+  team.position = Math.min(team.position + correct, TOTAL_TILES - 1);
+
+  if (team.position >= TOTAL_TILES - 1) {
+    showWin(team); return;
+  }
+
+  game.currentTeamIdx = (game.currentTeamIdx + 1) % game.teams.length;
+  if (game.currentTeamIdx === 0) game.round++;
+  renderBoard();
+  showScreen('board');
+}
+
+// ═══════════════════════════════════════════
+// WIN
+// ═══════════════════════════════════════════
+function showWin(team) {
+  document.getElementById('win-team-dot').style.background = team.color;
+  document.getElementById('win-team-name').textContent = team.name;
+  document.getElementById('win-sub').textContent = 'heeft de finish bereikt! 🎉';
+  showScreen('win');
+}
+
+function newGame() {
+  game = null;
+  renderHome();
+  showScreen('home');
+}
+
+// ═══════════════════════════════════════════
+// QUIT
+// ═══════════════════════════════════════════
+function confirmQuit() { openModal('modal-quit'); }
+function quitGame() {
+  clearInterval(timerInterval);
+  game = null;
+  closeModal('modal-quit');
+  renderHome();
+  showScreen('home');
+}
+
+// ═══════════════════════════════════════════
+// MODALS
+// ═══════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.add('hidden'); });
+});
+
+// ═══════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+library = loadLibrary();
+renderHome();
+</script>
+</body>
+</html>
