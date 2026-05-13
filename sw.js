@@ -1,4 +1,4 @@
-const CACHE = '30seconds-v1';
+const CACHE = '30seconds-v2';
 const ASSETS = ['/30seconds/', '/30seconds/index.html'];
 
 // Installeer: sla de app op in de cache
